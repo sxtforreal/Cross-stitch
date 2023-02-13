@@ -9,15 +9,15 @@ library(dmc)
 
 change_resolution <- function(image_df, x_size)
 { if(!require(sp)) {
-    stop("The sp packages must be installed. Run install.packages(\"sp\") and then try again.")
-  }
+  stop("The sp packages must be installed. Run install.packages(\"sp\") and then try again.")
+}
   if(!require(dplyr)) {
     stop("The dplyr packages must be installed. Run install.packages(\"dplyr\") and then try again.")
   }
   
   sp_dat <- image_df 
   gridded(sp_dat) = ~x+y
- 
+  
   persp = (gridparameters(sp_dat)$cells.dim[2]/gridparameters(sp_dat)$cells.dim[1])
   y_size = floor(x_size*persp)
   orig_x_size = gridparameters(sp_dat)$cells.dim[1]
@@ -35,6 +35,7 @@ change_resolution <- function(image_df, x_size)
   
   return(df)
 }
+
 
 process_image<-function(image_file_name, k_list){
   
@@ -55,6 +56,7 @@ process_image<-function(image_file_name, k_list){
   return(cluster_info)
 }
 
+
 scree_plot<-function(cluster_info){
   
   #Plot the scree plot.
@@ -72,6 +74,7 @@ scree_plot<-function(cluster_info){
   plot_grid(G1,G2)
 }
 
+
 color_strips<-function(cluster_info){
   #Want to show all the color strips provided by the most complex clustering.
   #The most complex clustering is the last one in the list.
@@ -85,16 +88,17 @@ color_strips<-function(cluster_info){
   
   #Create new data frame 'dmc' that maps the RGB information of each cluster center to their DMC information. The data frame includes six variables: 'dmc', 'name', 'hex', 'red', 'green', 'blue'.
   dmc <- map(center$col, ~dmc(.x, visualize = FALSE)) %>%tibble() %>%unnest(cols = c(.))
- 
-   #Show the color strips with the DMC color closest to the cluster centers' color. 'hex' is the DMC code for colors.
+  
+  #Show the color strips with the DMC color closest to the cluster centers' color. 'hex' is the DMC code for colors.
   show_col(dmc$hex)
 }
 
+
 make_pattern<-function(cluster_info,k, x_size, black_white = FALSE, background_colour = NULL){
- 
+  
   #Select the optimal clustering according to scree plot or color strips.
   selected_cluster<-cluster_info[[2]][cluster_info[[2]]$k==k,]
- 
+  
   #Extract the information of optimal clustering.
   opt_kclust <- selected_cluster$kclust[[1]]
   
@@ -107,10 +111,10 @@ make_pattern<-function(cluster_info,k, x_size, black_white = FALSE, background_c
   #Update the data frame of image with clustering centers' information and combine them with DMC information.
   opt_dat <- augment(opt_kclust, cluster_info[[1]]) %>% rename(cluster = .cluster)
   opt_dat <- dmc[array(opt_dat$cluster),] %>%select(hex) %>%cbind(opt_dat, .)
- 
+  
   #Update the list cluster_info.
   new_cluster_info<-list(opt_dat,selected_cluster)
- 
+  
   #Change resolution
   simple<-change_resolution(new_cluster_info[[1]],x_size)
   
@@ -126,7 +130,7 @@ make_pattern<-function(cluster_info,k, x_size, black_white = FALSE, background_c
       ggplot(simple, aes(x = x, y = y, shape=cluster)) + geom_point() + scale_y_reverse()
     }
     else{
-    ggplot(simple, aes(x = x, y = y, color=hex , shape=cluster)) + geom_point() + scale_y_reverse()
+      ggplot(simple, aes(x = x, y = y, color=hex , shape=cluster)) + geom_point() + scale_y_reverse()
     }
   }
   else{
